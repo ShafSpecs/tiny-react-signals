@@ -16,7 +16,7 @@
     "isbot": "^5.1.26",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "open-source-stack": "workspace:*"
+    "ultimate-react": "workspace:*"
   },
   "devDependencies": {
     "@react-router/dev": "^7.5.0",

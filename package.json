@@ -1,5 +1,5 @@
 {
-	"name": "open-source-stack",
+	"name": "ultimate-react-repo",
 	"version": "1.0.0",
 	"description": "Minimal open-source stack to help you ship an open-source package in TS",
 	"scripts": {
@@ -30,8 +30,7 @@
 	"homepage": "https://github.com/forge-42/open-source-stack#readme",
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",
-		"@changesets/cli": "^2.29.0",
-		"@types/node": "^20.17.30",
+		"@types/node": "^24.0.0",
 		"lefthook": "^1.11.10"
 	},
 	"packageManager": "pnpm@10.6.5",

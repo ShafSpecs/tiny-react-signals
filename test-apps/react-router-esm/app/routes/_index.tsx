@@ -1,12 +1,13 @@
 import type { MetaFunction } from "react-router";
 // Import and test your package
-import { test } from "open-source-stack";
+import { test } from "ultimate-react";
 
 export const meta: MetaFunction = () => {
   return [{ title: "New Remix App" }, { name: "description", content: "Welcome to Remix!" }];
 };
 
 export default function Index() {
+  test();
   return (
     <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
       <h1>Welcome to Remix</h1>
