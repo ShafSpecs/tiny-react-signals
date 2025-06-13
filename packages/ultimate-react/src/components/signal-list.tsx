@@ -89,9 +89,6 @@ function renderReactNodeToHTML(node: ReactNode, parentElement?: HTMLElement, ele
 		const type = node.type as string
 
 		if (typeof type === "string") {
-			const elementId = `signal-list-el-${Math.random().toString(36).substr(2, 9)}`
-			const currentPath = elementPath ? `${elementPath} > ${type}#${elementId}` : `${type}#${elementId}`
-
 			const eventHandlers: { eventType: string; handler: Function }[] = []
 			const attributes = Object.keys(props)
 				.filter((key) => {
@@ -119,9 +116,14 @@ function renderReactNodeToHTML(node: ReactNode, parentElement?: HTMLElement, ele
 				})
 				.join(" ")
 
-			const allAttributes = `id="${elementId}" ${attributes}`.trim()
+			let allAttributes = attributes
+			let elementId = ""
 
+			// Only generate ID and attach event handlers if there are any
 			if (eventHandlers.length > 0 && parentElement) {
+				elementId = `signal-list-el-${Math.random().toString(36).substr(2, 9)}`
+				allAttributes = `id="${elementId}" ${attributes}`.trim()
+
 				if (!listEventListenerStore.has(parentElement)) {
 					listEventListenerStore.set(parentElement, [])
 				}
@@ -138,7 +140,7 @@ function renderReactNodeToHTML(node: ReactNode, parentElement?: HTMLElement, ele
 
 			const openTag = `<${type}${allAttributes ? ` ${allAttributes}` : ""}>`
 			const closeTag = `</${type}>`
-			const childrenHTML = props.children ? renderReactNodeToHTML(props.children, parentElement, currentPath) : ""
+			const childrenHTML = props.children ? renderReactNodeToHTML(props.children, parentElement, elementPath) : ""
 
 			return `${openTag}${childrenHTML}${closeTag}`
 		}
@@ -218,7 +220,7 @@ export function SignalList<T = unknown>(props: SignalListProps<T>): React.ReactE
 				const element = listRef.current
 				if (!element) return
 
-				if (!Array.isArray(value)) {
+				if (!Array.isArray(value) || value.length === 0) {
 					element.innerHTML = `<li>${placeholder}</li>`
 					return
 				}
@@ -305,7 +307,8 @@ export function SignalList<T = unknown>(props: SignalListProps<T>): React.ReactE
 			cleanupRef.current = null
 		}
 
-		if (id && !pattern) {
+		if (id) {
+			// Prefer id over pattern
 			const bindingFn = createArrayListBinding(id)
 			cleanupRef.current = REACTIVE_CORE.subscribe(id, bindingFn)
 

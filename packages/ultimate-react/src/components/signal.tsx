@@ -244,7 +244,11 @@ export function Signal<T = unknown>(props: SignalProps<T>): React.ReactElement {
 					if (dangerouslySetInnerHTML && typeof value === "string") {
 						element.innerHTML = value
 					} else {
-						element.textContent = String(value ?? "")
+						// If value is undefined, keep placeholder
+						if (value === undefined) {
+							return
+						}
+						element.textContent = String(value ?? "") // In case of explicit null -- should we use placeholder?
 					}
 				}
 			}
@@ -259,11 +263,14 @@ export function Signal<T = unknown>(props: SignalProps<T>): React.ReactElement {
 				if (!element) return
 
 				if (typeof children === "function") {
-					// Create values object from signal IDs
 					const values: Record<string, unknown> = {}
+
+					// First, check if short keys would cause collisions
+					const shortKeys = signalIds.map((id) => id.split(".").pop() || id)
+					const hasCollisions = new Set(shortKeys).size !== shortKeys.length
+
 					for (const signalId of signalIds) {
-						// Use the last part of the signal ID as the key
-						const key = signalId.split(".").pop() || signalId
+						const key = hasCollisions ? signalId.replace(/[^a-zA-Z0-9_]/g, "_") : signalId.split(".").pop() || signalId
 						values[key] = REACTIVE_CORE.getValue(signalId)
 					}
 
@@ -284,7 +291,7 @@ export function Signal<T = unknown>(props: SignalProps<T>): React.ReactElement {
 			cleanupRef.current = null
 		}
 
-		if (id && !memoizedIds) {
+		if (id) {
 			const bindingFn = createSingleSignalBinding(id)
 			cleanupRef.current = REACTIVE_CORE.subscribe(id, bindingFn)
 
