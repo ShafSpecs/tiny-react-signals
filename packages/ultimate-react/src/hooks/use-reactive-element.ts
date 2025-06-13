@@ -22,7 +22,6 @@ export function useReactiveElement<T = unknown, E extends HTMLElement = HTMLElem
 
 		cleanupRef.current = REACTIVE_CORE.bindElement(element, signalId, memoizedBindingFn)
 
-		// Cleanup on unmount
 		return () => {
 			if (cleanupRef.current) {
 				cleanupRef.current()
