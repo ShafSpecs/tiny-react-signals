@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { REACTIVE_CORE } from "../core"
 import type { SignalId, SignalOptions } from "../core"
 
@@ -17,9 +17,25 @@ export function useSignalComputed<T>(
 	computeFn: (...deps: unknown[]) => T,
 	options?: SignalOptions<T>
 ): [T, () => void] {
-	const signal = REACTIVE_CORE.createComputed(id, dependencies, computeFn, options)
+	const depsRef = useRef<SignalId[]>(dependencies)
+	const [localValue, setLocalValue] = useState<T>(() => {
+		const signal = REACTIVE_CORE.createComputed(id, dependencies, computeFn, options)
+		return signal.value
+	})
 
-	const [localValue, setLocalValue] = useState<T>(() => signal.value)
+	const depsChanged =
+		dependencies.length !== depsRef.current.length || dependencies.some((dep, index) => dep !== depsRef.current[index])
+
+	useEffect(() => {
+		if (depsChanged) {
+			REACTIVE_CORE.cleanup(id)
+
+			const signal = REACTIVE_CORE.createComputed(id, dependencies, computeFn, options)
+			setLocalValue(signal.value)
+
+			depsRef.current = dependencies
+		}
+	}, [id, dependencies, computeFn, options, depsChanged])
 
 	useEffect(() => {
 		let mounted = true

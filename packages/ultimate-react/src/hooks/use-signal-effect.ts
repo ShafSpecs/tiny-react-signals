@@ -10,6 +10,7 @@ import type { SignalId } from "../core"
  */
 export function useSignalEffect(effect: ((values: unknown[]) => void) | (() => void), signalDeps: SignalId[]): void {
 	const cleanupRef = useRef<(() => void) | null>(null)
+	const isInitialSetupRef = useRef(true)
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: Probably using effect wrong here. Open a PR.
 	useEffect(() => {
@@ -20,37 +21,45 @@ export function useSignalEffect(effect: ((values: unknown[]) => void) | (() => v
 
 		const getCurrentValues = () => signalDeps.map((id) => REACTIVE_CORE.getValue(id))
 
-		const currentValues = getCurrentValues()
-		const effectCleanup = effect(currentValues)
+		const runEffect = () => {
+			if (cleanupRef.current) {
+				cleanupRef.current()
+				cleanupRef.current = null
+			}
 
-		if (typeof effectCleanup === "function") {
-			cleanupRef.current = effectCleanup
+			const values = getCurrentValues()
+			const effectCleanup = effect(values)
+
+			if (typeof effectCleanup === "function") {
+				cleanupRef.current = effectCleanup
+			}
 		}
 
-		const bindings = signalDeps.map((signalId) =>
-			REACTIVE_CORE.subscribe(signalId, () => {
-				if (cleanupRef.current) {
-					cleanupRef.current()
-					cleanupRef.current = null
-				}
+		// Subscribe to all signals - ignore initial subscription calls
+		const bindings = signalDeps
+			.map((signalId) =>
+				REACTIVE_CORE.subscribe(signalId, () => {
+					if (!isInitialSetupRef.current) {
+						runEffect()
+					}
+				})
+			)
+			.filter((cleanup): cleanup is () => void => cleanup !== null)
 
-				const newValues = getCurrentValues()
-				const newEffectCleanup = effect(newValues)
-
-				if (typeof newEffectCleanup === "function") {
-					cleanupRef.current = newEffectCleanup
-				}
-			})
-		)
+		// Run initial effect once after subscriptions are set up
+		isInitialSetupRef.current = false
+		runEffect()
 
 		return () => {
+			isInitialSetupRef.current = true
+
 			if (cleanupRef.current) {
 				cleanupRef.current()
 				cleanupRef.current = null
 			}
 
 			for (const cleanup of bindings) {
-				cleanup?.()
+				cleanup()
 			}
 		}
 	}, [signalDeps.join(",")])
