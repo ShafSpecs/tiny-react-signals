@@ -46,6 +46,9 @@
 	"publishConfig": {
 		"provenance": true
 	},
+	"peerDependencies": {
+		"react": ">=18.0.0"
+	},
 	"devDependencies": {
 		"@arethetypeswrong/cli": "^0.17.4",
 		"@changesets/cli": "^2.29.0",

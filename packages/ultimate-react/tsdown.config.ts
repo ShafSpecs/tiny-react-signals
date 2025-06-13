@@ -7,4 +7,5 @@ export default defineConfig({
 	minify: false,
 	format: ["esm", "cjs"],
 	outDir: "dist",
+	external: ["react"],
 })

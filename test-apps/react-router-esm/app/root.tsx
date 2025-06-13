@@ -1,3 +1,4 @@
+import { scan } from "react-scan";
 import {
   Links,
   Meta,
@@ -5,8 +6,16 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import { useEffect } from "react";
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    // Make sure to run react-scan only after hydration
+    scan({
+      enabled: true,
+    });
+  }, []);
+
   return (
     <html lang="en">
       <head>

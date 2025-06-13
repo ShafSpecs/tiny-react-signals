@@ -9,6 +9,8 @@
 		"skipLibCheck": true /* Skip type checking all .d.ts files. */,
 		"types": ["vitest/globals"],
 		"rootDir": ".",
+		"composite": true,
+		"jsx": "react",
 		"outDir": "./dist",
 		"noEmit": true
 	},
