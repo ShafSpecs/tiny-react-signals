@@ -1,4 +1,8 @@
+// Core reactive functionality
 export { reactive } from "./reactive"
+export { signal } from "./signal"
+
+// Core types
 export type {
 	SignalId,
 	SignalValue,
@@ -6,20 +10,29 @@ export type {
 	ComputeFunction,
 } from "./core"
 
-export { signal } from "./signal"
+// React hooks
+export { useReactiveElement } from "./hooks/use-reactive-element"
+export { useSignal } from "./hooks/use-signal"
+export { useSignalComputed } from "./hooks/use-signal-computed"
+export { useSignalEffect } from "./hooks/use-signal-effect"
+export { useSignalRef } from "./hooks/use-signal-ref"
 
-export { useReactiveElement } from "./hooks"
+// React components
+export { Signal } from "./components/signal"
+export { SignalList } from "./components/signal-list"
 
-export {
-	textBinding,
-	htmlBinding,
-	classBinding,
-	styleBinding,
-	attributeBinding,
-	visibilityBinding,
-	colorBinding,
-	scaleBinding,
-	progressBinding,
-} from "./utils"
+// Component types
+export type {
+	SignalRenderProp,
+	MultiSignalRenderProp,
+	SignalProps,
+} from "./components/signal"
+
+export type {
+	ListItemRenderProp,
+	PatternItemRenderProp,
+	ListType,
+	SignalListProps,
+} from "./components/signal-list"
 
 export const test = (): void => {}

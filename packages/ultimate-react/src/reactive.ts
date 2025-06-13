@@ -1,5 +1,5 @@
 import { REACTIVE_CORE } from "./core"
-import type { BindingFunction, ComputeFunction, ConditionFunction, Signal, SignalId } from "./core"
+import type { BindingFunction, ConditionFunction, Signal, SignalId, TypedComputeFunction } from "./core"
 
 /**
  * Safe reactive API - curated subset of REACTIVE_CORE functionality
@@ -48,7 +48,7 @@ export const reactive = {
 	 * @param dependencies - Array of signal IDs this computed signal depends on
 	 * @param computeFn - Function to compute the value from dependencies
 	 */
-	createComputed<T>(id: SignalId, dependencies: SignalId[], computeFn: ComputeFunction<T>): void {
+	createComputed<T>(id: SignalId, dependencies: SignalId[], computeFn: TypedComputeFunction<T>): void {
 		REACTIVE_CORE.createComputed(id, dependencies, computeFn)
 	},
 

@@ -1,6 +1,6 @@
 import * as React from "react"
-import { REACTIVE_CORE } from "./core"
-import type { BindingFunction, SignalId } from "./core"
+import { REACTIVE_CORE } from "../core"
+import type { BindingFunction, SignalId } from "../core"
 
 export function useReactiveElement<T = unknown, E extends HTMLElement = HTMLElement>(
 	signalId: SignalId,

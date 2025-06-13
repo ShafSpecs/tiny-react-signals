@@ -1,7 +1,9 @@
 export type SignalId = string
 export type SignalValue = unknown
 export type BindingFunction<T = unknown> = (element: HTMLElement, value: T) => void
+export type CallbackFunction<T = unknown> = (value: T) => void
 export type ComputeFunction<T = unknown> = (...dependencies: unknown[]) => T
+export type TypedComputeFunction<T = unknown> = (...args: any[]) => T
 export type ConditionFunction<T = unknown> = (value: T) => boolean
 export type Transformer<T> = (value: T) => T
 export type TransformerChain<T> = Transformer<T>[]
@@ -14,8 +16,9 @@ export interface Signal<T = unknown> {
 	value: T
 	rawValue: T
 	bindings: Map<number, SignalBinding>
+	callbacks: Map<number, CallbackFunction<T>>
 	computed: Set<SignalId>
-	computeFn?: ComputeFunction<T>
+	computeFn?: ComputeFunction<T> | TypedComputeFunction<T>
 	dependencies?: SignalId[]
 	transformers?: TransformerChain<T>
 	hasTransformers: boolean
@@ -46,7 +49,7 @@ export interface ReactiveEngine {
 	createComputed<T>(
 		id: SignalId,
 		dependencies: SignalId[],
-		computeFn: ComputeFunction<T>,
+		computeFn: ComputeFunction<T> | TypedComputeFunction<T>,
 		options?: SignalOptions<T>
 	): Signal<T>
 	bindElement<T>(element: HTMLElement, signalId: SignalId, bindingFn: BindingFunction<T>): (() => void) | null
@@ -56,6 +59,7 @@ export interface ReactiveEngine {
 		condition: ConditionFunction<T>,
 		bindingFn: BindingFunction<T>
 	): (() => void) | null
+	subscribe<T>(signalId: SignalId, callback: CallbackFunction<T>): (() => void) | null
 	cleanup(signalId: SignalId): void
 	batchUpdate(fn: () => void): void
 	getActiveSignals(): SignalId[]
@@ -115,15 +119,26 @@ class ReactiveEngineImpl implements ReactiveEngine {
 
 	private executeDOMUpdates(signalId: SignalId): void {
 		const signal = this.signals.get(signalId)
-		if (!signal || signal.bindings.size === 0) return
+		if (!signal || (signal.bindings.size === 0 && signal.callbacks.size === 0)) return
 
 		const value = signal.value
-		const bindings = signal.bindings.values()
 
-		for (const binding of bindings) {
-			const element = binding.element
-			if (element?.isConnected) {
-				binding.condition ? binding.condition(value) && binding.fn(element, value) : binding.fn(element, value)
+		// Execute DOM bindings
+		if (signal.bindings.size > 0) {
+			const bindings = signal.bindings.values()
+			for (const binding of bindings) {
+				const element = binding.element
+				if (element?.isConnected) {
+					binding.condition ? binding.condition(value) && binding.fn(element, value) : binding.fn(element, value)
+				}
+			}
+		}
+
+		// Execute direct callbacks
+		if (signal.callbacks.size > 0) {
+			const callbacks = signal.callbacks.values()
+			for (const callback of callbacks) {
+				callback(value)
 			}
 		}
 	}
@@ -193,6 +208,7 @@ class ReactiveEngineImpl implements ReactiveEngine {
 			value: finalValue,
 			rawValue: initialValue,
 			bindings: new Map(),
+			callbacks: new Map(),
 			computed: new Set(),
 			transformers,
 			hasTransformers,
@@ -261,6 +277,21 @@ class ReactiveEngineImpl implements ReactiveEngine {
 		}
 	}
 
+	subscribe<T>(signalId: SignalId, callback: CallbackFunction<T>): (() => void) | null {
+		const signal = this.signals.get(signalId)
+		if (!signal) return null
+
+		const callbackId = ++this.bindingCounter
+		signal.callbacks.set(callbackId, callback as CallbackFunction<unknown>)
+
+		// Call immediately with current value
+		callback(signal.value as T)
+
+		return () => {
+			signal.callbacks.delete(callbackId)
+		}
+	}
+
 	updateSignal<T>(id: SignalId, value: T): void {
 		const signal = this.signals.get(id)
 		if (!signal) return
@@ -296,7 +327,7 @@ class ReactiveEngineImpl implements ReactiveEngine {
 	createComputed<T>(
 		id: SignalId,
 		dependencies: SignalId[],
-		computeFn: ComputeFunction<T>,
+		computeFn: ComputeFunction<T> | TypedComputeFunction<T>,
 		options?: SignalOptions<T>
 	): Signal<T> {
 		if (this.signals.has(id)) {
@@ -321,6 +352,7 @@ class ReactiveEngineImpl implements ReactiveEngine {
 			value: finalValue,
 			rawValue: initialValue,
 			bindings: new Map(),
+			callbacks: new Map(),
 			computed: new Set(),
 			transformers,
 			hasTransformers,
@@ -387,6 +419,7 @@ class ReactiveEngineImpl implements ReactiveEngine {
 		const signal = this.signals.get(signalId)
 		if (signal) {
 			signal.bindings.clear()
+			signal.callbacks.clear()
 			this.signals.delete(signalId)
 		}
 	}

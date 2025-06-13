@@ -1,5 +1,13 @@
 import { REACTIVE_CORE } from "./core"
-import type { BindingFunction, ComputeFunction, ConditionFunction, Signal, SignalId, SignalOptions } from "./core"
+import type {
+	BindingFunction,
+	CallbackFunction,
+	ComputeFunction,
+	ConditionFunction,
+	Signal,
+	SignalId,
+	SignalOptions,
+} from "./core"
 
 /**
  * Direct signal API for creating and managing signals
@@ -108,6 +116,16 @@ export const signal = {
 	 */
 	remove(id: SignalId): void {
 		REACTIVE_CORE.cleanup(id)
+	},
+
+	/**
+	 * Subscribe to a signal for changes
+	 * @param id - Signal identifier
+	 * @param callback - Function to call when signal changes
+	 * @returns Cleanup function or null if subscription failed
+	 */
+	subscribe<T>(id: SignalId, callback: CallbackFunction<T>): (() => void) | null {
+		return REACTIVE_CORE.subscribe(id, callback)
 	},
 
 	/**

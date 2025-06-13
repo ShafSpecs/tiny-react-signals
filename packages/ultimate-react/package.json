@@ -19,6 +19,138 @@
 				"import": "./dist/index.cjs",
 				"require": "./dist/index.cjs"
 			}
+		},
+		"./reactive": {
+			"import": {
+				"types": "./dist/reactive.d.ts",
+				"import": "./dist/reactive.js",
+				"default": "./dist/reactive.js"
+			},
+			"require": {
+				"types": "./dist/reactive.d.cts",
+				"import": "./dist/reactive.cjs",
+				"require": "./dist/reactive.cjs"
+			}
+		},
+		"./signal": {
+			"import": {
+				"types": "./dist/signal.d.ts",
+				"import": "./dist/signal.js",
+				"default": "./dist/signal.js"
+			},
+			"require": {
+				"types": "./dist/signal.d.cts",
+				"import": "./dist/signal.cjs",
+				"require": "./dist/signal.cjs"
+			}
+		},
+		"./hooks": {
+			"import": {
+				"types": "./dist/hooks/index.d.ts",
+				"import": "./dist/hooks/index.js",
+				"default": "./dist/hooks/index.js"
+			},
+			"require": {
+				"types": "./dist/hooks/index.d.cts",
+				"import": "./dist/hooks/index.cjs",
+				"require": "./dist/hooks/index.cjs"
+			}
+		},
+		"./use-signal": {
+			"import": {
+				"types": "./dist/hooks/use-signal.d.ts",
+				"import": "./dist/hooks/use-signal.js",
+				"default": "./dist/hooks/use-signal.js"
+			},
+			"require": {
+				"types": "./dist/hooks/use-signal.d.cts",
+				"import": "./dist/hooks/use-signal.cjs",
+				"require": "./dist/hooks/use-signal.cjs"
+			}
+		},
+		"./use-signal-computed": {
+			"import": {
+				"types": "./dist/hooks/use-signal-computed.d.ts",
+				"import": "./dist/hooks/use-signal-computed.js",
+				"default": "./dist/hooks/use-signal-computed.js"
+			},
+			"require": {
+				"types": "./dist/hooks/use-signal-computed.d.cts",
+				"import": "./dist/hooks/use-signal-computed.cjs",
+				"require": "./dist/hooks/use-signal-computed.cjs"
+			}
+		},
+		"./use-signal-effect": {
+			"import": {
+				"types": "./dist/hooks/use-signal-effect.d.ts",
+				"import": "./dist/hooks/use-signal-effect.js",
+				"default": "./dist/hooks/use-signal-effect.js"
+			},
+			"require": {
+				"types": "./dist/hooks/use-signal-effect.d.cts",
+				"import": "./dist/hooks/use-signal-effect.cjs",
+				"require": "./dist/hooks/use-signal-effect.cjs"
+			}
+		},
+		"./use-signal-ref": {
+			"import": {
+				"types": "./dist/hooks/use-signal-ref.d.ts",
+				"import": "./dist/hooks/use-signal-ref.js",
+				"default": "./dist/hooks/use-signal-ref.js"
+			},
+			"require": {
+				"types": "./dist/hooks/use-signal-ref.d.cts",
+				"import": "./dist/hooks/use-signal-ref.cjs",
+				"require": "./dist/hooks/use-signal-ref.cjs"
+			}
+		},
+		"./use-reactive-element": {
+			"import": {
+				"types": "./dist/hooks/use-reactive-element.d.ts",
+				"import": "./dist/hooks/use-reactive-element.js",
+				"default": "./dist/hooks/use-reactive-element.js"
+			},
+			"require": {
+				"types": "./dist/hooks/use-reactive-element.d.cts",
+				"import": "./dist/hooks/use-reactive-element.cjs",
+				"require": "./dist/hooks/use-reactive-element.cjs"
+			}
+		},
+		"./components": {
+			"import": {
+				"types": "./dist/components/index.d.ts",
+				"import": "./dist/components/index.js",
+				"default": "./dist/components/index.js"
+			},
+			"require": {
+				"types": "./dist/components/index.d.cts",
+				"import": "./dist/components/index.cjs",
+				"require": "./dist/components/index.cjs"
+			}
+		},
+		"./components/signal": {
+			"import": {
+				"types": "./dist/components/signal.d.ts",
+				"import": "./dist/components/signal.js",
+				"default": "./dist/components/signal.js"
+			},
+			"require": {
+				"types": "./dist/components/signal.d.cts",
+				"import": "./dist/components/signal.cjs",
+				"require": "./dist/components/signal.cjs"
+			}
+		},
+		"./components/signal-list": {
+			"import": {
+				"types": "./dist/components/signal-list.d.ts",
+				"import": "./dist/components/signal-list.js",
+				"default": "./dist/components/signal-list.js"
+			},
+			"require": {
+				"types": "./dist/components/signal-list.d.cts",
+				"import": "./dist/components/signal-list.cjs",
+				"require": "./dist/components/signal-list.cjs"
+			}
 		}
 	},
 	"scripts": {
@@ -54,9 +186,11 @@
 		"@changesets/cli": "^2.29.0",
 		"@types/node": "^24.0.0",
 		"@types/react": "^19.1.7",
+		"@types/react-dom": "^19.1.6",
 		"@vitest/coverage-v8": "^3.1.1",
 		"happy-dom": "^17.4.4",
 		"react": "^19.1.0",
+		"react-dom": "^19.1.0",
 		"tsdown": "^0.9.1",
 		"typescript": "^5.8.3",
 		"vitest": "^3.1.1"
