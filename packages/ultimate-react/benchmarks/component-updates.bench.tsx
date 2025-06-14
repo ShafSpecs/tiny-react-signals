@@ -215,7 +215,7 @@ describe("Single Value Updates", () => {
 		},
 		{
 			setup: () => {
-				REACTIVE_CORE.updateSignal("update-single", 0)
+				REACTIVE_CORE.upsertSignal("update-single", 0)
 			},
 			time: 500,
 			iterations: 50,
@@ -263,7 +263,7 @@ describe("Frequent Updates Performance", () => {
 		},
 		{
 			setup: () => {
-				REACTIVE_CORE.updateSignal("update-frequent", 0)
+				REACTIVE_CORE.upsertSignal("update-frequent", 0)
 			},
 			time: 1000,
 			iterations: 20,
@@ -275,9 +275,9 @@ describe("Frequent Updates Performance", () => {
 
 describe("Cascade Updates Performance", () => {
 	const cascadeSetup = () => {
-		REACTIVE_CORE.updateSignal("cascade-value1", 0)
-		REACTIVE_CORE.updateSignal("cascade-value2", 0)
-		REACTIVE_CORE.updateSignal("cascade-value3", 0)
+		REACTIVE_CORE.upsertSignal("cascade-value1", 0)
+		REACTIVE_CORE.upsertSignal("cascade-value2", 0)
+		REACTIVE_CORE.upsertSignal("cascade-value3", 0)
 	}
 
 	bench(
@@ -329,8 +329,8 @@ describe("Cascade Updates Performance", () => {
 describe("Deep Component Tree Updates", () => {
 	const deepTreeSetup = () => {
 		for (let depth = 0; depth < 5; depth++) {
-			REACTIVE_CORE.updateSignal(`deep-tree-${depth}`, depth)
-			REACTIVE_CORE.updateSignal(`deep-tree-leaf-${depth}`, depth + 100)
+			REACTIVE_CORE.upsertSignal(`deep-tree-${depth}`, depth)
+			REACTIVE_CORE.upsertSignal(`deep-tree-leaf-${depth}`, depth + 100)
 		}
 	}
 
@@ -383,11 +383,11 @@ describe("Deep Component Tree Updates", () => {
 
 describe("Batched Updates Performance", () => {
 	const batchSetup = () => {
-		REACTIVE_CORE.updateSignal("batch-count1", 0)
-		REACTIVE_CORE.updateSignal("batch-count2", 0)
-		REACTIVE_CORE.updateSignal("batch-count3", 0)
-		REACTIVE_CORE.updateSignal("batch-count4", 0)
-		REACTIVE_CORE.updateSignal("batch-count5", 0)
+		REACTIVE_CORE.upsertSignal("batch-count1", 0)
+		REACTIVE_CORE.upsertSignal("batch-count2", 0)
+		REACTIVE_CORE.upsertSignal("batch-count3", 0)
+		REACTIVE_CORE.upsertSignal("batch-count4", 0)
+		REACTIVE_CORE.upsertSignal("batch-count5", 0)
 	}
 
 	bench(

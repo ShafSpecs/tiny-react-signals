@@ -436,9 +436,9 @@ describe("Todo App Performance", () => {
 		}))
 
 		// Setup signals
-		REACTIVE_CORE.updateSignal("todos", initialTodos)
-		REACTIVE_CORE.updateSignal("todo-filter", "all")
-		REACTIVE_CORE.updateSignal("todo-sort", "date")
+		REACTIVE_CORE.upsertSignal("todos", initialTodos)
+		REACTIVE_CORE.upsertSignal("todo-filter", "all")
+		REACTIVE_CORE.upsertSignal("todo-sort", "date")
 	}
 
 	bench(
@@ -521,11 +521,11 @@ describe("Real-time Dashboard Performance", () => {
 
 	const setupSignalDashboard = () => {
 		cleanup()
-		REACTIVE_CORE.updateSignal("dashboard-users", 0)
-		REACTIVE_CORE.updateSignal("dashboard-revenue", 0)
-		REACTIVE_CORE.updateSignal("dashboard-orders", 0)
-		REACTIVE_CORE.updateSignal("dashboard-conversion", 0)
-		REACTIVE_CORE.updateSignal("dashboard-alerts", [])
+		REACTIVE_CORE.upsertSignal("dashboard-users", 0)
+		REACTIVE_CORE.upsertSignal("dashboard-revenue", 0)
+		REACTIVE_CORE.upsertSignal("dashboard-orders", 0)
+		REACTIVE_CORE.upsertSignal("dashboard-conversion", 0)
+		REACTIVE_CORE.upsertSignal("dashboard-alerts", [])
 	}
 
 	bench(
@@ -603,9 +603,9 @@ describe("Data Grid Performance", () => {
 			status: ["active", "inactive", "pending"][Math.floor(Math.random() * 3)] as any,
 		}))
 
-		REACTIVE_CORE.updateSignal("grid-data", initialData)
-		REACTIVE_CORE.updateSignal("grid-filter", "all")
-		REACTIVE_CORE.updateSignal("grid-sort", "name")
+		REACTIVE_CORE.upsertSignal("grid-data", initialData)
+		REACTIVE_CORE.upsertSignal("grid-filter", "all")
+		REACTIVE_CORE.upsertSignal("grid-sort", "name")
 	}
 
 	bench(
