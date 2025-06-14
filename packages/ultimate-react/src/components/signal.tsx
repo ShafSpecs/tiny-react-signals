@@ -266,7 +266,7 @@ export function Signal<T = unknown>(props: SignalProps<T>): React.ReactElement {
 					const values: Record<string, unknown> = {}
 
 					// First, check if short keys would cause collisions
-					const shortKeys = signalIds.map((id) => id.split(".").pop() || id)
+					const shortKeys = signalIds.map((id) => id.split(".").pop()?.replaceAll("-", "_") || id)
 					const hasCollisions = new Set(shortKeys).size !== shortKeys.length
 
 					for (const signalId of signalIds) {
