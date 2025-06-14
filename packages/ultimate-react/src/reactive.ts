@@ -106,7 +106,7 @@ export const reactive = {
 	 */
 	create<T extends Record<string, unknown>>(signals: T): void {
 		for (const [id, value] of Object.entries(signals)) {
-			REACTIVE_CORE.createSignal(id, value)
+			REACTIVE_CORE.upsertSignal(id, value)
 		}
 	},
 
@@ -157,7 +157,7 @@ export const reactive = {
 	 */
 	createFromTuples(entries: Array<[string, unknown]>): void {
 		for (const [id, value] of entries) {
-			REACTIVE_CORE.createSignal(id, value)
+			REACTIVE_CORE.upsertSignal(id, value)
 		}
 	},
 }
