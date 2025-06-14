@@ -19,7 +19,7 @@
 		"enabled": true
 	},
 	"linter": {
-		"ignore": ["test-apps"],
+		"ignore": ["test-apps", "**/benchmarks/**"],
 		"enabled": true,
 		"rules": {
 			"recommended": true,

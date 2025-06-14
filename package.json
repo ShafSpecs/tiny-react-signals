@@ -3,6 +3,7 @@
 	"version": "1.0.0",
 	"description": "Minimal open-source stack to help you ship an open-source package in TS",
 	"scripts": {
+		"benchmark": "pnpm run --filter=\"./packages/ultimate-react\" benchmark",
 		"build": "pnpm run --filter=\"./packages/**/*\" build",
 		"build:watch": "pnpm build && pnpm run --filter=\"./packages/**/*\" --parallel build --watch",
 		"clean": "git clean -fdX .",

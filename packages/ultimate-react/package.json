@@ -162,7 +162,12 @@
 		"prepublishOnly": "pnpm run build",
 		"typecheck": "tsc",
 		"validate": "pnpm run check && pnpm run typecheck && pnpm run test",
-		"check:exports": "attw --pack ."
+		"check:exports": "attw --pack .",
+		"benchmark": "vitest bench",
+		"benchmark:hooks": "vitest bench benchmarks/hook-benchmarks.bench.ts",
+		"benchmark:updates": "vitest bench benchmarks/component-updates.bench.tsx",
+		"benchmark:memory": "vitest bench benchmarks/memory.bench.tsx",
+		"benchmark:real-world": "vitest bench benchmarks/real-world.bench.tsx"
 	},
 	"author": "",
 	"license": "MIT",
@@ -184,6 +189,7 @@
 	"devDependencies": {
 		"@arethetypeswrong/cli": "^0.17.4",
 		"@changesets/cli": "^2.29.0",
+		"@happy-dom/global-registrator": "^18.0.1",
 		"@testing-library/react": "^16.3.0",
 		"@types/node": "^24.0.0",
 		"@types/react": "^19.1.7",
@@ -193,6 +199,7 @@
 		"react": "^19.1.0",
 		"react-dom": "^19.1.0",
 		"tsdown": "^0.9.1",
+		"tsx": "^4.19.1",
 		"typescript": "^5.8.3",
 		"vitest": "^3.1.1"
 	}
