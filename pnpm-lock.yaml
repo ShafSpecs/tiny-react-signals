@@ -18,7 +18,7 @@ importers:
         specifier: ^1.11.10
         version: 1.11.10
 
-  packages/ultimate-react:
+  packages/tiny-react-signals:
     devDependencies:
       '@arethetypeswrong/cli':
         specifier: ^0.18.2
@@ -86,9 +86,9 @@ importers:
       react-router:
         specifier: ^7.1.5
         version: 7.5.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      ultimate-react-signals:
+      tiny-react-signals:
         specifier: workspace:*
-        version: link:../../packages/ultimate-react
+        version: link:../../packages/tiny-react-signals
     devDependencies:
       '@react-router/dev':
         specifier: ^7.1.5
@@ -135,9 +135,9 @@ importers:
       react-scan:
         specifier: ^0.3.4
         version: 0.3.4(@types/react@19.1.2)(react-dom@19.1.0(react@19.1.0))(react-router@7.5.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)(rollup@4.37.0)
-      ultimate-react-signals:
+      tiny-react-signals:
         specifier: workspace:*
-        version: link:../../packages/ultimate-react
+        version: link:../../packages/tiny-react-signals
     devDependencies:
       '@react-router/dev':
         specifier: ^7.5.0

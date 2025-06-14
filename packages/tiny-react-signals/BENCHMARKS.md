@@ -1,4 +1,4 @@
-# Ultimate React Benchmarks
+# Tiny React Signals Benchmarks
 
 Comparison is the thief of joy.
 
@@ -47,7 +47,7 @@ These benchmarks compare **fundamentally different architectures** solving the s
 - ✅ Maintained by a dedicated team
 - ✅ Has proper tooling and ecosystem support
 
-This Ultimate React project is an **experimental exploration** of "what if we could add signals to React" - not a recommendation to abandon React.
+This project is an **experimental exploration** of "what if we could add signals to React" - not a recommendation to abandon React.
 
 ## Benchmark Categories & Interpretation
 
@@ -100,6 +100,8 @@ Results vary based on:
 ## The Real Question
 
 **It's not "Which is faster?"** - It's **"Which trade-offs make sense for your use case?"**
+
+### Other Questions
 
 **Why bother with creating benchmarks in the first place?** - Because it was a quick way to get a **feel for the performance of the library** alongside passing tests. Plus, they helped me improve the perfomance by thinning the (unreliable) gap between the two.
 

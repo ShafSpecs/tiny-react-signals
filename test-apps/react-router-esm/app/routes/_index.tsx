@@ -1,7 +1,7 @@
 import type { MetaFunction } from "react-router";
 import React, { useCallback } from 'react';
-import { test } from "ultimate-react-signals";
-import { signal, useReactiveElement, Signal, SignalList, useSignal } from "ultimate-react-signals";
+import { test } from "tiny-react-signals";
+import { signal, useReactiveElement, Signal, SignalList, useSignal } from "tiny-react-signals";
 
 // Type assertions to fix JSX compatibility with generic components
 const SignalComponent = Signal as any;
