@@ -52,6 +52,12 @@ export interface ReactiveEngine {
 		computeFn: ComputeFunction<T> | TypedComputeFunction<T>,
 		options?: SignalOptions<T>
 	): Signal<T>
+	upsertComputed<T>(
+		id: SignalId,
+		dependencies: SignalId[],
+		computeFn: ComputeFunction<T> | TypedComputeFunction<T>,
+		options?: SignalOptions<T>
+	): Signal<T>
 	bindElement<T>(element: HTMLElement, signalId: SignalId, bindingFn: BindingFunction<T>): (() => void) | null
 	bindWhen<T>(
 		element: HTMLElement,
@@ -119,25 +125,38 @@ class ReactiveEngineImpl implements ReactiveEngine {
 
 	private executeDOMUpdates(signalId: SignalId): void {
 		const signal = this.signals.get(signalId)
-		if (!signal || (signal.bindings.size === 0 && signal.callbacks.size === 0)) return
+		if (!signal) return
 
 		const value = signal.value
+		const callbacksSize = signal.callbacks.size
+		const bindingsSize = signal.bindings.size
 
-		// Execute DOM bindings
-		if (signal.bindings.size > 0) {
-			const bindings = signal.bindings.values()
-			for (const binding of bindings) {
-				const element = binding.element
-				if (element?.isConnected) {
-					binding.condition ? binding.condition(value) && binding.fn(element, value) : binding.fn(element, value)
+		if (bindingsSize === 0 && callbacksSize > 0) {
+			if (callbacksSize === 1) {
+				const callback = signal.callbacks.values().next().value
+				callback?.(value)
+			} else {
+				for (const callback of signal.callbacks.values()) {
+					callback(value)
+				}
+			}
+			return
+		}
+
+		if (bindingsSize > 0) {
+			for (const binding of signal.bindings.values()) {
+				if (binding.element?.isConnected) {
+					if (binding.condition) {
+						binding.condition(value) && binding.fn(binding.element, value)
+					} else {
+						binding.fn(binding.element, value)
+					}
 				}
 			}
 		}
 
-		// Execute direct callbacks
-		if (signal.callbacks.size > 0) {
-			const callbacks = signal.callbacks.values()
-			for (const callback of callbacks) {
+		if (callbacksSize > 0) {
+			for (const callback of signal.callbacks.values()) {
 				callback(value)
 			}
 		}
@@ -258,7 +277,7 @@ class ReactiveEngineImpl implements ReactiveEngine {
 		bindingFn: BindingFunction<T>
 	): (() => void) | null {
 		const signal = this.signals.get(signalId)
-		if (!signal) return null
+		if (!signal || !element) return null
 
 		const bindingId = ++this.bindingCounter
 
@@ -267,6 +286,7 @@ class ReactiveEngineImpl implements ReactiveEngine {
 			fn: bindingFn as BindingFunction<unknown>,
 			condition: condition as ConditionFunction<unknown>,
 		})
+		this.bindings.set(element, { signalId, bindingId })
 
 		if (condition(signal.value as T)) {
 			bindingFn(element, signal.value as T)
@@ -284,9 +304,6 @@ class ReactiveEngineImpl implements ReactiveEngine {
 		const callbackId = ++this.bindingCounter
 		signal.callbacks.set(callbackId, callback as CallbackFunction<unknown>)
 
-		// Call immediately with current value
-		callback(signal.value as T)
-
 		return () => {
 			signal.callbacks.delete(callbackId)
 		}
@@ -296,9 +313,41 @@ class ReactiveEngineImpl implements ReactiveEngine {
 		const signal = this.signals.get(id)
 		if (!signal) return
 
-		const newValue = signal.hasTransformers ? this.applyTransformers(value, signal.transformers ?? []) : value
+		if (!signal.hasTransformers) {
+			if (Object.is(signal.value, value)) return
 
-		if (signal.value === newValue) return
+			signal.rawValue = value
+			signal.value = value
+
+			if (this.isBatching) {
+				this.batchedUpdates.add(id)
+				return
+			}
+
+			const callbacksSize = signal.callbacks.size
+			if (callbacksSize > 0 && signal.bindings.size === 0 && !signal.hasComputed) {
+				if (callbacksSize === 1) {
+					const callback = signal.callbacks.values().next().value
+					callback?.(value)
+				} else {
+					for (const callback of signal.callbacks.values()) {
+						callback(value)
+					}
+				}
+				return
+			}
+
+			this.executeDOMUpdates(id)
+			if (signal.hasComputed) {
+				for (const computedId of signal.computed) {
+					this.recomputeSignal(computedId)
+				}
+			}
+			return
+		}
+
+		const newValue = this.applyTransformers(value, signal.transformers ?? [])
+		if (Object.is(signal.value, newValue)) return
 
 		signal.rawValue = value
 		signal.value = newValue
@@ -307,7 +356,6 @@ class ReactiveEngineImpl implements ReactiveEngine {
 			this.batchedUpdates.add(id)
 		} else {
 			this.executeDOMUpdates(id)
-
 			if (signal.hasComputed) {
 				for (const computedId of signal.computed) {
 					this.recomputeSignal(computedId)
@@ -374,21 +422,37 @@ class ReactiveEngineImpl implements ReactiveEngine {
 		return signal
 	}
 
+	upsertComputed<T>(
+		id: SignalId,
+		dependencies: SignalId[],
+		computeFn: ComputeFunction<T> | TypedComputeFunction<T>,
+		options?: SignalOptions<T>
+	): Signal<T> {
+		const existingSignal = this.signals.get(id)
+		if (existingSignal) {
+			return existingSignal as Signal<T>
+		}
+
+		return this.createComputed(id, dependencies, computeFn, options)
+	}
+
 	recomputeSignal(id: SignalId): void {
 		const signal = this.signals.get(id) as ComputedSignal<unknown>
 		if (!signal?.computeFn || !signal.dependencies) return
 
-		if (!signal.depCache) {
-			signal.depCache = new Array(signal.dependencies.length)
+		const depsLength = signal.dependencies.length
+
+		if (!signal.depCache || signal.depCache.length !== depsLength) {
+			signal.depCache = new Array(depsLength)
 		}
 
 		const deps = signal.depCache
 		const dependencies = signal.dependencies
 		let hasChanged = false
 
-		for (let i = 0; i < dependencies.length; i++) {
-			const newVal = this.signals.get(dependencies[i])?.rawValue
-			if (deps[i] !== newVal) {
+		for (let i = 0; i < depsLength; i++) {
+			const newVal = this.signals.get(dependencies[i])?.value
+			if (!Object.is(deps[i], newVal)) {
 				deps[i] = newVal
 				hasChanged = true
 			}
@@ -442,7 +506,7 @@ class ReactiveEngineImpl implements ReactiveEngine {
 }
 
 // Global namespace fallback for cross-bundle compatibility
-export const REACTIVE_CORE = (() => {
+export const REACTIVE_CORE: ReactiveEngine = (() => {
 	if (typeof window !== "undefined" && window.__REACTIVE_CORE__) {
 		return window.__REACTIVE_CORE__
 	}

@@ -10,7 +10,6 @@ import type { SignalId } from "../core"
  */
 export function useSignalEffect(effect: ((values: unknown[]) => void) | (() => void), signalDeps: SignalId[]): void {
 	const cleanupRef = useRef<(() => void) | null>(null)
-	const isInitialSetupRef = useRef(true)
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: Probably using effect wrong here. Open a PR.
 	useEffect(() => {
@@ -35,24 +34,13 @@ export function useSignalEffect(effect: ((values: unknown[]) => void) | (() => v
 			}
 		}
 
-		// Subscribe to all signals - ignore initial subscription calls
 		const bindings = signalDeps
-			.map((signalId) =>
-				REACTIVE_CORE.subscribe(signalId, () => {
-					if (!isInitialSetupRef.current) {
-						runEffect()
-					}
-				})
-			)
+			.map((signalId) => REACTIVE_CORE.subscribe(signalId, runEffect))
 			.filter((cleanup): cleanup is () => void => cleanup !== null)
 
-		// Run initial effect once after subscriptions are set up
-		isInitialSetupRef.current = false
 		runEffect()
 
 		return () => {
-			isInitialSetupRef.current = true
-
 			if (cleanupRef.current) {
 				cleanupRef.current()
 				cleanupRef.current = null

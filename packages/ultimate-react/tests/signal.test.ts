@@ -256,8 +256,12 @@ describe("Signal API Test Suite", () => {
 			const callback = vi.fn() as Mock<CallbackFunction<string>>
 			const cleanup = signal.subscribe("sub-signal", callback)
 
-			expect(callback).toHaveBeenCalledWith("initial")
+			expect(callback).not.toHaveBeenCalled()
 			expect(cleanup).toBeInstanceOf(Function)
+
+			signal.set("sub-signal", "updated")
+			expect(callback).toHaveBeenCalledWith("updated")
+			expect(callback).toHaveBeenCalledTimes(1)
 		})
 
 		it("should call subscription on updates", () => {

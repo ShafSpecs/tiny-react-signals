@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useMemo, useSyncExternalStore } from "react"
 import { REACTIVE_CORE } from "../core"
 import type { SignalId, SignalOptions } from "../core"
 
@@ -15,57 +15,34 @@ export function useSignal<T>(
 	initialValue: T,
 	options?: SignalOptions<T>
 ): [T, (value: T | ((prev: T) => T)) => void] {
-	const createdSignalRef = useRef(false)
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Depend on only id for perf
+	const signal = useMemo(() => {
+		REACTIVE_CORE.upsertSignal(id, initialValue, options)
+		return { id, initialValue }
+	}, [id])
 
-	REACTIVE_CORE.upsertSignal(id, initialValue, options)
-
-	// Local state to trigger React re-renders
-	const [localValue, setLocalValue] = useState<T>(() => {
-		const existingValue = REACTIVE_CORE.getValue<T>(id)
-		if (existingValue !== undefined) {
-			return existingValue
+	const subscribe = useMemo(() => {
+		return (callback: () => void) => {
+			return REACTIVE_CORE.subscribe<T>(signal.id, callback) || (() => {})
 		}
+	}, [signal.id])
 
-		createdSignalRef.current = true
-		return initialValue
-	})
+	const getSnapshot = useMemo(() => {
+		return () => REACTIVE_CORE.getValue<T>(signal.id) ?? signal.initialValue
+	}, [signal.id, signal.initialValue])
 
-	useEffect(() => {
-		let mounted = true
+	const value = useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
 
-		// Direct subscription without DOM elements - zero overhead!
-		const cleanup = REACTIVE_CORE.subscribe<T>(id, (value: T) => {
-			if (mounted && value !== localValue) {
-				// The behaviour of startTransition is up in the air. Not confirmed to be stable
-				// https://react.dev/reference/react/startTransition#caveats
-				//
-				// Use React 18's automatic batching via startTransition for non-urgent updates
-				// startTransition(() => {
-				setLocalValue(value)
-				// })
-			}
-		})
-
-		return () => {
-			mounted = false
-			cleanup?.()
-		}
-	}, [id, localValue])
-
-	// Setter function (supports both direct values and updater functions)
-	const setValue = useCallback(
-		(value: T | ((prev: T) => T)) => {
-			if (typeof value === "function") {
-				const updater = value as (prev: T) => T
-				const currentValue = REACTIVE_CORE.getValue<T>(id)
-				const newValue = updater(currentValue ?? initialValue)
-				REACTIVE_CORE.updateSignal(id, newValue)
+	const setValue = useMemo(() => {
+		return (newValue: T | ((prev: T) => T)) => {
+			if (typeof newValue === "function") {
+				const current = REACTIVE_CORE.getValue<T>(signal.id) ?? signal.initialValue
+				REACTIVE_CORE.updateSignal(signal.id, (newValue as (prev: T) => T)(current))
 			} else {
-				REACTIVE_CORE.updateSignal(id, value)
+				REACTIVE_CORE.updateSignal(signal.id, newValue)
 			}
-		},
-		[id, initialValue]
-	)
+		}
+	}, [signal.id, signal.initialValue])
 
-	return [localValue, setValue]
+	return [value, setValue]
 }

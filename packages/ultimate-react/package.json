@@ -1,5 +1,5 @@
 {
-	"name": "ultimate-react",
+	"name": "ultimate-react-signals",
 	"version": "1.1.2",
 	"description": "Minimal open-source stack to help you ship an open-source package in TS",
 	"main": "./dist/index.cjs",
@@ -104,6 +104,18 @@
 				"require": "./dist/hooks/use-signal-ref.cjs"
 			}
 		},
+		"./use-signal-selector": {
+			"import": {
+				"types": "./dist/hooks/use-signal-selector.d.ts",
+				"import": "./dist/hooks/use-signal-selector.js",
+				"default": "./dist/hooks/use-signal-selector.js"
+			},
+			"require": {
+				"types": "./dist/hooks/use-signal-selector.d.cts",
+				"import": "./dist/hooks/use-signal-selector.cjs",
+				"require": "./dist/hooks/use-signal-selector.cjs"
+			}
+		},
 		"./use-reactive-element": {
 			"import": {
 				"types": "./dist/hooks/use-reactive-element.d.ts",
@@ -157,17 +169,18 @@
 		"test": "vitest run",
 		"test:cov": "vitest run --coverage",
 		"postbuild": "pnpm run check:exports",
-		"build": "tsdown src/index.ts --config tsdown.config.ts --clean",
+		"build": "tsdown --config tsdown.config.ts --clean",
 		"dev": "tsdown src/index.ts --config tsdown.config.ts --watch",
 		"prepublishOnly": "pnpm run build",
 		"typecheck": "tsc",
 		"validate": "pnpm run check && pnpm run typecheck && pnpm run test",
-		"check:exports": "attw --pack .",
+		"check:exports": "attw --pack . --profile node16 --ignore-rules no-resolution",
 		"benchmark": "vitest bench",
 		"benchmark:hooks": "vitest bench benchmarks/hook-benchmarks.bench.ts",
 		"benchmark:updates": "vitest bench benchmarks/component-updates.bench.tsx",
 		"benchmark:memory": "vitest bench benchmarks/memory.bench.tsx",
-		"benchmark:real-world": "vitest bench benchmarks/real-world.bench.tsx"
+		"benchmark:real-world": "vitest bench benchmarks/real-world.bench.tsx",
+		"benchmark:direct": "vitest bench benchmarks/direct-comparison.bench.tsx"
 	},
 	"author": "",
 	"license": "MIT",
@@ -187,7 +200,7 @@
 		"react": ">=18.0.0"
 	},
 	"devDependencies": {
-		"@arethetypeswrong/cli": "^0.17.4",
+		"@arethetypeswrong/cli": "^0.18.2",
 		"@changesets/cli": "^2.29.0",
 		"@happy-dom/global-registrator": "^18.0.1",
 		"@testing-library/react": "^16.3.0",
@@ -198,7 +211,7 @@
 		"happy-dom": "^17.4.4",
 		"react": "^19.1.0",
 		"react-dom": "^19.1.0",
-		"tsdown": "^0.9.1",
+		"tsdown": "^0.12.7",
 		"tsx": "^4.19.1",
 		"typescript": "^5.8.3",
 		"vitest": "^3.1.1"

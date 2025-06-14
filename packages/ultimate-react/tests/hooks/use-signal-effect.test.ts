@@ -532,14 +532,14 @@ describe("useSignalEffect Hook Test Suite", () => {
 			REACTIVE_CORE.subscribe("integration-signal", coreCallback)
 
 			expect(effectCallback).toHaveBeenCalledTimes(1)
-			expect(coreCallback).toHaveBeenCalledTimes(1)
+			expect(coreCallback).not.toHaveBeenCalled()
 
 			act(() => {
 				REACTIVE_CORE.updateSignal("integration-signal", "updated")
 			})
 
 			expect(effectCallback).toHaveBeenCalledTimes(2)
-			expect(coreCallback).toHaveBeenCalledTimes(2)
+			expect(coreCallback).toHaveBeenCalledTimes(1)
 		})
 
 		it("should work with signal cleanup", () => {

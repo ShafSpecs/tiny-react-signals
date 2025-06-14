@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useMemo, useRef, useSyncExternalStore } from "react"
 import { REACTIVE_CORE } from "../core"
 import type { SignalId, SignalOptions } from "../core"
 
@@ -18,43 +18,42 @@ export function useSignalComputed<T>(
 	options?: SignalOptions<T>
 ): [T, () => void] {
 	const depsRef = useRef<SignalId[]>(dependencies)
-	const [localValue, setLocalValue] = useState<T>(() => {
-		const signal = REACTIVE_CORE.createComputed(id, dependencies, computeFn, options)
-		return signal.value
-	})
+	const depsChanged = useMemo(() => {
+		const changed =
+			dependencies.length !== depsRef.current.length ||
+			dependencies.some((dep, index) => dep !== depsRef.current[index])
 
-	const depsChanged =
-		dependencies.length !== depsRef.current.length || dependencies.some((dep, index) => dep !== depsRef.current[index])
+		if (changed) {
+			depsRef.current = [...dependencies]
+		}
+		return changed
+	}, [dependencies])
 
-	useEffect(() => {
+	useMemo(() => {
 		if (depsChanged) {
 			REACTIVE_CORE.cleanup(id)
-
-			const signal = REACTIVE_CORE.createComputed(id, dependencies, computeFn, options)
-			setLocalValue(signal.value)
-
-			depsRef.current = dependencies
 		}
-	}, [id, dependencies, computeFn, options, depsChanged])
+		REACTIVE_CORE.upsertComputed(id, dependencies, computeFn, options)
+	}, [id, depsChanged, computeFn, options, dependencies])
 
-	useEffect(() => {
-		let mounted = true
+	const subscribe = useCallback(
+		(callback: () => void) => {
+			return REACTIVE_CORE.subscribe<T>(id, callback) ?? (() => {})
+		},
+		[id]
+	)
 
-		const cleanup = REACTIVE_CORE.subscribe<T>(id, (value: T) => {
-			if (mounted) {
-				setLocalValue(value)
-			}
-		})
-
-		return () => {
-			mounted = false
-			cleanup?.()
-		}
+	const getSnapshot = useCallback(() => {
+		// Some war crimes happening here
+		// undefined should never return though, as we upsert the signal just above
+		return (REACTIVE_CORE.getValue<T>(id) ?? undefined) as T
 	}, [id])
+
+	const value = useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
 
 	const recompute = useCallback(() => {
 		REACTIVE_CORE.recomputeSignal(id)
 	}, [id])
 
-	return [localValue, recompute]
+	return [value, recompute]
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, type ReactNode, useCallback } from "react"
+import React, { useEffect, useRef, type ReactNode, useCallback, Fragment } from "react"
 import { REACTIVE_CORE } from "../core"
 import type { SignalId } from "../core"
 
@@ -358,7 +358,12 @@ export function SignalList<T = unknown>(props: SignalListProps<T>): React.ReactE
 			style,
 			...otherProps,
 		},
-		// Initial placeholder content - will be replaced by signal updates
-		React.createElement("li", { key: "loading" }, placeholder)
+		// Switched to a fragment wrapper due to React 18 more strict children types
+		React.createElement(
+			Fragment,
+			null,
+			// Initial placeholder content - will be replaced by signal updates
+			React.createElement("li", { key: "loading" }, placeholder)
+		)
 	)
 }

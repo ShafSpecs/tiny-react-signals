@@ -1,6 +1,8 @@
 import { REACTIVE_CORE } from "./core"
 import type { BindingFunction, ConditionFunction, Signal, SignalId, TypedComputeFunction } from "./core"
 
+type Notation = "dot" | "underscore" | "hyphen"
+
 /**
  * Safe reactive API - curated subset of REACTIVE_CORE functionality
  * Exposes only the intended public methods for end users
@@ -96,5 +98,66 @@ export const reactive = {
 	 */
 	cleanup(id: SignalId): void {
 		REACTIVE_CORE.cleanup(id)
+	},
+
+	/**
+	 * Create multiple signals from an object
+	 * @param signals - Object with signal IDs as keys and initial values as values
+	 */
+	create<T extends Record<string, unknown>>(signals: T): void {
+		for (const [id, value] of Object.entries(signals)) {
+			REACTIVE_CORE.createSignal(id, value)
+		}
+	},
+
+	/**
+	 * Create signals from nested object structure (converts to dot notation)
+	 * @param obj - Nested object to convert to signals
+	 * @param prefix - Optional prefix for all signal IDs
+	 * @param notation - Notation to use for the signal IDs (dot, underscore, hyphen)
+	 */
+	createNested<T extends Record<string, unknown>>(obj: T, prefix = "", notation: Notation = "dot"): void {
+		let notationMap: string
+
+		switch (notation) {
+			case "dot":
+				notationMap = "."
+				break
+			case "underscore":
+				notationMap = "_"
+				break
+			case "hyphen":
+				notationMap = "-"
+				break
+		}
+
+		const flattenObject = (obj: any, currentPrefix = ""): Record<string, unknown> => {
+			const result: Record<string, unknown> = {}
+
+			for (const [key, value] of Object.entries(obj)) {
+				const newKey = currentPrefix ? `${currentPrefix}${notationMap}${key}` : key
+
+				if (value && typeof value === "object" && !Array.isArray(value)) {
+					Object.assign(result, flattenObject(value, newKey))
+				} else {
+					result[newKey] = value
+				}
+			}
+
+			return result
+		}
+
+		const flattened = flattenObject(obj, prefix)
+		this.create(flattened)
+	},
+
+	/**
+	 * Create signals from array of tuples
+	 * @param entries - Array of [id, value] tuples
+	 */
+	createFromTuples(entries: Array<[string, unknown]>): void {
+		for (const [id, value] of entries) {
+			REACTIVE_CORE.createSignal(id, value)
+		}
 	},
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, type ReactNode, type ElementType, useMemo, useCallback } from "react"
+import React, { useEffect, useRef, type ReactNode, type ElementType, useMemo, useCallback, Fragment } from "react"
 import { REACTIVE_CORE } from "../core"
 import type { SignalId } from "../core"
 
@@ -340,7 +340,7 @@ export function Signal<T = unknown>(props: SignalProps<T>): React.ReactElement {
 			style,
 			...otherProps,
 		},
-
-		typeof children === "function" ? placeholder : children || placeholder
+		// Switched to a fragment wrapper due to React 18 more strict children types
+		React.createElement(Fragment, null, typeof children === "function" ? placeholder : children || placeholder)
 	)
 }

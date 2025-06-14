@@ -17,7 +17,7 @@
     "react-dom": "^19.1.0",
     "react-router": "^7.5.0",
     "react-scan": "^0.3.4",
-    "ultimate-react": "workspace:*"
+    "ultimate-react-signals": "workspace:*"
   },
   "devDependencies": {
     "@react-router/dev": "^7.5.0",

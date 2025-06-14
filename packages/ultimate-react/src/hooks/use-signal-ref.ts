@@ -23,6 +23,8 @@ export function useSignalRef<T>(
 	const valueRef = useRef<T | undefined>(REACTIVE_CORE.getValue<T>(id))
 
 	useEffect(() => {
+		valueRef.current = REACTIVE_CORE.getValue<T>(id)
+
 		const cleanup = REACTIVE_CORE.subscribe<T>(id, (value: T) => {
 			valueRef.current = value
 		})

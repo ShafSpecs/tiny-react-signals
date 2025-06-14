@@ -1,4 +1,4 @@
-import { type Mock, beforeEach, describe, expect, it, vi } from "vitest"
+import { type Mock, beforeEach, describe, expect, test, vi } from "vitest"
 import { REACTIVE_CORE } from "../src/core"
 import type {
 	BindingFunction,
@@ -17,7 +17,7 @@ describe("Ultimate React Core Test Suite", () => {
 	})
 
 	describe("Signal Creation & Management", () => {
-		it("should create a signal with initial value", () => {
+		test("should create a signal with initial value", () => {
 			const signal = REACTIVE_CORE.createSignal("test", "hello")
 
 			expect(signal.value).toBe("hello")
@@ -29,7 +29,7 @@ describe("Ultimate React Core Test Suite", () => {
 			expect(signal.hasComputed).toBe(false)
 		})
 
-		it("should create signal with transformers", () => {
+		test("should create signal with transformers", () => {
 			const upperCaseTransform = (value: string) => value.toUpperCase()
 			const signal = REACTIVE_CORE.createSignal("test-transform", "hello", {
 				transform: upperCaseTransform,
@@ -40,7 +40,7 @@ describe("Ultimate React Core Test Suite", () => {
 			expect(signal.hasTransformers).toBe(true)
 		})
 
-		it("should create signal with transformer chain", () => {
+		test("should create signal with transformer chain", () => {
 			const upperCase = (value: string) => value.toUpperCase()
 			const addExclamation = (value: string) => `${value}!`
 
@@ -52,7 +52,7 @@ describe("Ultimate React Core Test Suite", () => {
 			expect(signal.rawValue).toBe("hello")
 		})
 
-		it("should return existing signal if it already exists", () => {
+		test("should return existing signal if it already exists", () => {
 			const signal1 = REACTIVE_CORE.createSignal("existing", "value1")
 			const signal2 = REACTIVE_CORE.createSignal("existing", "value2")
 
@@ -60,21 +60,21 @@ describe("Ultimate React Core Test Suite", () => {
 			expect(signal1.value).toBe("value1") // Should keep original value
 		})
 
-		it("should upsert signal (create new)", () => {
+		test("should upsert signal (create new)", () => {
 			const signal = REACTIVE_CORE.upsertSignal("new-signal", "initial")
 
 			expect(signal.value).toBe("initial")
 			expect(REACTIVE_CORE.getValue("new-signal")).toBe("initial")
 		})
 
-		it("should upsert signal (return existing)", () => {
+		test("should upsert signal (return existing)", () => {
 			REACTIVE_CORE.createSignal("existing-upsert", "original")
 			const signal = REACTIVE_CORE.upsertSignal("existing-upsert", "new")
 
 			expect(signal.value).toBe("original") // Should keep original value
 		})
 
-		it("should merge transformers on upsert", () => {
+		test("should merge transformers on upsert", () => {
 			const upperCase = (value: string) => value.toUpperCase()
 			const addExclamation = (value: string) => `${value}!`
 
@@ -88,14 +88,14 @@ describe("Ultimate React Core Test Suite", () => {
 	})
 
 	describe("Signal Updates & Values", () => {
-		it("should update signal value", () => {
+		test("should update signal value", () => {
 			REACTIVE_CORE.createSignal("update-test", "initial")
 			REACTIVE_CORE.updateSignal("update-test", "updated")
 
 			expect(REACTIVE_CORE.getValue("update-test")).toBe("updated")
 		})
 
-		it("should apply transformers on update", () => {
+		test("should apply transformers on update", () => {
 			const upperCase = (value: string) => value.toUpperCase()
 			REACTIVE_CORE.createSignal("transform-update", "hello", { transform: upperCase })
 
@@ -105,7 +105,7 @@ describe("Ultimate React Core Test Suite", () => {
 			expect(REACTIVE_CORE.getRawValue("transform-update")).toBe("world")
 		})
 
-		it("should not trigger updates if value is unchanged", () => {
+		test("should not trigger updates if value is unchanged", () => {
 			const callback = vi.fn()
 			REACTIVE_CORE.createSignal("no-change", "value")
 			REACTIVE_CORE.subscribe("no-change", callback)
@@ -118,21 +118,21 @@ describe("Ultimate React Core Test Suite", () => {
 			expect(callback).not.toHaveBeenCalled()
 		})
 
-		it("should ignore updates to non-existent signals", () => {
+		test("should ignore updates to non-existent signals", () => {
 			// Should not throw
 			expect(() => {
 				REACTIVE_CORE.updateSignal("non-existent", "value")
 			}).not.toThrow()
 		})
 
-		it("should return undefined for non-existent signal values", () => {
+		test("should return undefined for non-existent signal values", () => {
 			expect(REACTIVE_CORE.getValue("non-existent")).toBeUndefined()
 			expect(REACTIVE_CORE.getRawValue("non-existent")).toBeUndefined()
 		})
 	})
 
 	describe("Computed Signals", () => {
-		it("should create computed signal", () => {
+		test("should create computed signal", () => {
 			REACTIVE_CORE.createSignal("dep1", 10)
 			REACTIVE_CORE.createSignal("dep2", 20)
 
@@ -144,7 +144,7 @@ describe("Ultimate React Core Test Suite", () => {
 			expect(computed.dependencies).toEqual(["dep1", "dep2"])
 		})
 
-		it("should update computed signal when dependencies change", () => {
+		test("should update computed signal when dependencies change", () => {
 			REACTIVE_CORE.createSignal("a", 5)
 			REACTIVE_CORE.createSignal("b", 3)
 
@@ -160,7 +160,19 @@ describe("Ultimate React Core Test Suite", () => {
 			expect(REACTIVE_CORE.getValue("product")).toBe(40)
 		})
 
-		it("should apply transformers to computed signals", () => {
+		test("should not create a new computed signal if upserted", () => {
+			REACTIVE_CORE.createSignal("a", 5)
+			REACTIVE_CORE.createSignal("b", 3)
+			REACTIVE_CORE.createSignal("c", 4)
+
+			REACTIVE_CORE.createComputed("product", ["a", "b"], (a: number, b: number) => a * b)
+			const computed = REACTIVE_CORE.upsertComputed("product", ["a", "c"], (a: number, c: number) => a + c)
+
+			expect(computed.value).toBe(15)
+			expect(REACTIVE_CORE.getValue("product")).toBe(15)
+		})
+
+		test("should apply transformers to computed signals", () => {
 			REACTIVE_CORE.createSignal("x", 2)
 			REACTIVE_CORE.createSignal("y", 3)
 
@@ -175,7 +187,7 @@ describe("Ultimate React Core Test Suite", () => {
 			expect(REACTIVE_CORE.getRawValue("computed-transform")).toBe(6) // 2 * 3
 		})
 
-		it("should mark dependency signals as having computed", () => {
+		test("should mark dependency signals as having computed", () => {
 			REACTIVE_CORE.createSignal("dep", 5)
 			const depSignal = REACTIVE_CORE.createSignal("dep", 5) // Get reference
 
@@ -195,7 +207,7 @@ describe("Ultimate React Core Test Suite", () => {
 			} as HTMLElement
 		})
 
-		it("should bind element to signal", () => {
+		test("should bind element to signal", () => {
 			REACTIVE_CORE.createSignal("bind-test", "hello")
 
 			const bindingFn: BindingFunction<string> = vi.fn()
@@ -205,7 +217,7 @@ describe("Ultimate React Core Test Suite", () => {
 			expect(cleanup).toBeInstanceOf(Function)
 		})
 
-		it("should update bound element when signal changes", () => {
+		test("should update bound element when signal changes", () => {
 			REACTIVE_CORE.createSignal("element-update", "initial")
 
 			const bindingFn: Mock<BindingFunction<string>> = vi.fn()
@@ -217,7 +229,7 @@ describe("Ultimate React Core Test Suite", () => {
 			expect(bindingFn).toHaveBeenCalledWith(mockElement, "updated")
 		})
 
-		it("should cleanup binding", () => {
+		test("should cleanup binding", () => {
 			REACTIVE_CORE.createSignal("cleanup-test", "value")
 
 			const bindingFn: Mock<BindingFunction<string>> = vi.fn()
@@ -230,7 +242,7 @@ describe("Ultimate React Core Test Suite", () => {
 			expect(bindingFn).not.toHaveBeenCalled()
 		})
 
-		it("should bind with condition", () => {
+		test("should bind with condition", () => {
 			REACTIVE_CORE.createSignal("conditional", 5)
 
 			const condition: ConditionFunction<number> = (value: number) => value > 3
@@ -241,7 +253,7 @@ describe("Ultimate React Core Test Suite", () => {
 			expect(bindingFn).toHaveBeenCalledWith(mockElement, 5)
 		})
 
-		it("should not bind when condition is false", () => {
+		test("should not bind when condition is false", () => {
 			REACTIVE_CORE.createSignal("no-bind", 2)
 
 			const condition: ConditionFunction<number> = (value: number) => value > 3
@@ -252,7 +264,7 @@ describe("Ultimate React Core Test Suite", () => {
 			expect(bindingFn).not.toHaveBeenCalled()
 		})
 
-		it("should handle disconnected elements", () => {
+		test("should handle disconnected elements", () => {
 			const disconnectedElement = { isConnected: false } as HTMLElement
 			REACTIVE_CORE.createSignal("disconnected", "value")
 
@@ -266,7 +278,7 @@ describe("Ultimate React Core Test Suite", () => {
 			expect(bindingFn).not.toHaveBeenCalled()
 		})
 
-		it("should return null for non-existent signal binding", () => {
+		test("should return null for non-existent signal binding", () => {
 			const bindingFn: Mock<BindingFunction<string>> = vi.fn()
 			const cleanup = REACTIVE_CORE.bindElement(mockElement, "non-existent", bindingFn)
 
@@ -275,17 +287,22 @@ describe("Ultimate React Core Test Suite", () => {
 	})
 
 	describe("Subscriptions", () => {
-		it("should subscribe to signal changes", () => {
+		test("should subscribe to signal changes", () => {
 			REACTIVE_CORE.createSignal("sub-test", "initial")
 
 			const callback: Mock<CallbackFunction<string>> = vi.fn()
 			const cleanup = REACTIVE_CORE.subscribe("sub-test", callback)
 
-			expect(callback).toHaveBeenCalledWith("initial")
+			expect(callback).not.toHaveBeenCalled()
+
+			REACTIVE_CORE.updateSignal("sub-test", "updated")
+			expect(callback).toHaveBeenCalledWith("updated")
+			expect(callback).toHaveBeenCalledTimes(1)
+
 			expect(cleanup).toBeInstanceOf(Function)
 		})
 
-		it("should call subscription callback on updates", () => {
+		test("should call subscription callback on updates", () => {
 			REACTIVE_CORE.createSignal("sub-update", "old")
 
 			const callback: Mock<CallbackFunction<string>> = vi.fn()
@@ -297,7 +314,7 @@ describe("Ultimate React Core Test Suite", () => {
 			expect(callback).toHaveBeenCalledWith("new")
 		})
 
-		it("should cleanup subscription", () => {
+		test("should cleanup subscription", () => {
 			REACTIVE_CORE.createSignal("sub-cleanup", "value")
 
 			const callback: Mock<CallbackFunction<string>> = vi.fn()
@@ -310,7 +327,7 @@ describe("Ultimate React Core Test Suite", () => {
 			expect(callback).not.toHaveBeenCalled()
 		})
 
-		it("should return null for non-existent signal subscription", () => {
+		test("should return null for non-existent signal subscription", () => {
 			const callback: Mock<CallbackFunction<string>> = vi.fn()
 			const cleanup = REACTIVE_CORE.subscribe("non-existent", callback)
 
@@ -319,7 +336,7 @@ describe("Ultimate React Core Test Suite", () => {
 	})
 
 	describe("Batch Updates", () => {
-		it("should batch multiple updates", () => {
+		test("should batch multiple updates", () => {
 			REACTIVE_CORE.createSignal("batch1", 0)
 			REACTIVE_CORE.createSignal("batch2", 0)
 
@@ -346,7 +363,7 @@ describe("Ultimate React Core Test Suite", () => {
 			expect(callback2).toHaveBeenCalledWith(2)
 		})
 
-		it("should handle nested batch updates", () => {
+		test("should handle nested batch updates", () => {
 			REACTIVE_CORE.createSignal("nested", 0)
 			const callback = vi.fn()
 			REACTIVE_CORE.subscribe("nested", callback)
@@ -367,7 +384,7 @@ describe("Ultimate React Core Test Suite", () => {
 			expect(callback).toHaveBeenCalledWith(3)
 		})
 
-		it("should batch computed signal updates", () => {
+		test("should batch computed signal updates", () => {
 			REACTIVE_CORE.createSignal("dep1", 1)
 			REACTIVE_CORE.createSignal("dep2", 2)
 
@@ -390,7 +407,7 @@ describe("Ultimate React Core Test Suite", () => {
 	})
 
 	describe("Cleanup Operations", () => {
-		it("should cleanup signal and its bindings", () => {
+		test("should cleanup signal and its bindings", () => {
 			REACTIVE_CORE.createSignal("cleanup-signal", "value")
 
 			const bindingFn: BindingFunction<string> = vi.fn()
@@ -406,7 +423,7 @@ describe("Ultimate React Core Test Suite", () => {
 			expect(REACTIVE_CORE.getActiveSignals()).not.toContain("cleanup-signal")
 		})
 
-		it("should get active signals", () => {
+		test("should get active signals", () => {
 			REACTIVE_CORE.createSignal("active1", "value1")
 			REACTIVE_CORE.createSignal("active2", "value2")
 
@@ -416,7 +433,7 @@ describe("Ultimate React Core Test Suite", () => {
 			expect(activeSignals).toContain("active2")
 		})
 
-		it("should cleanup signals matching pattern", () => {
+		test("should cleanup signals matching pattern", () => {
 			REACTIVE_CORE.createSignal("user.name", "John")
 			REACTIVE_CORE.createSignal("user.email", "john@example.com")
 			REACTIVE_CORE.createSignal("app.theme", "dark")
@@ -428,7 +445,7 @@ describe("Ultimate React Core Test Suite", () => {
 			expect(REACTIVE_CORE.getValue("app.theme")).toBe("dark")
 		})
 
-		it("should handle cleanup of non-existent signals", () => {
+		test("should handle cleanup of non-existent signals", () => {
 			expect(() => {
 				REACTIVE_CORE.cleanup("non-existent")
 			}).not.toThrow()
@@ -436,7 +453,7 @@ describe("Ultimate React Core Test Suite", () => {
 	})
 
 	describe("Edge Cases & Error Handling", () => {
-		it("should handle null/undefined elements in bindings", () => {
+		test("should handle null/undefined elements in bindings", () => {
 			REACTIVE_CORE.createSignal("null-element", "value")
 
 			const bindingFn: BindingFunction<string> = vi.fn()
@@ -445,7 +462,7 @@ describe("Ultimate React Core Test Suite", () => {
 			expect(cleanup).toBeNull()
 		})
 
-		it("should handle complex transformer chains", () => {
+		test("should handle complex transformer chains", () => {
 			const transform1 = (value: number) => value * 2
 			const transform2 = (value: number) => value + 10
 			const transform3 = (value: number) => value / 2
@@ -458,14 +475,14 @@ describe("Ultimate React Core Test Suite", () => {
 			expect(REACTIVE_CORE.getValue("complex-transform")).toBe(10)
 		})
 
-		it("should handle computed signals with no dependencies", () => {
+		test("should handle computed signals with no dependencies", () => {
 			const computeFn: ComputeFunction<string> = () => "constant"
 			const computed = REACTIVE_CORE.createComputed("no-deps", [], computeFn)
 
 			expect(computed.value).toBe("constant")
 		})
 
-		it("should handle recomputation with missing dependencies", () => {
+		test("should handle recomputation with missing dependencies", () => {
 			REACTIVE_CORE.createSignal("temp-dep", 5)
 			const computeFn: TypedComputeFunction<number> = (value: number) => value * 2
 			REACTIVE_CORE.createComputed("temp-computed", ["temp-dep"], computeFn)
